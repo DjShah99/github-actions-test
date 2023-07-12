@@ -40,6 +40,7 @@ jobs:
         run: if [ -f requirements.txt ]; then echo "ENABLED=true" >> "$GITHUB_OUTPUT"; fi
       - name: pip cache
         if: ${{ steps.checklibs.outputs.ENABLED == 'true' }}
+        id: cache
         uses: actions/cache@v3
         with:
           path: ${{ steps.pip-cache.outputs.dir }}
@@ -47,6 +48,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Install deps
-        if: ${{ steps.checklibs.outputs.ENABLED == 'true' }}
+        if: ${{ steps.cache.outputs.cache_hit != 'true' }}
         run: pip install -r requirements.txt
 
