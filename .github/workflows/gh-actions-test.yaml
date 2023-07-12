@@ -35,7 +35,6 @@ jobs:
           echo "############";
           echo $GITHUB_OUTPUT;
           echo "#########################";
-          ls -al "$(pip cache dir)";
       - name: Run Check there are libraries to scan
         id: checklibs
         run: if [ -f requirements.txt ]; then echo "ENABLED=true" >> "$GITHUB_OUTPUT"; fi
