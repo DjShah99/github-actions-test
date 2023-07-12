@@ -1,0 +1,50 @@
+name: gh-actions-test-cache
+on:
+  workflow_dispatch:
+jobs:
+  gh-action-test-cache-job:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v3
+      - name: Validate Checkout
+        id: validate-checkout
+        run: |
+          whoami;
+          echo "#############################";
+          ls -al;
+      - name: SetupPython
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.7"
+      - name: Validate Python and pip
+        id: validate-python-pip
+        run: | 
+          python --version;
+          pip --version;
+      - name: Get pip cache dir
+        id: pip-cache
+        run: |
+          echo "dir=$(pip cache dir)" >> "$GITHUB_OUTPUT"
+      - name: Check pip cache dir
+        id: check-pip-cache
+        run: |
+          echo $GITHUB_OUTPUT;
+          echo "#########################";
+          ls -al $GITHUB_OUTPUT.dir;
+      - name: Run Check there are libraries to scan
+        id: checklibs
+        run: if [ -f requirements.txt ]; then echo "ENABLED=true" >> "$GITHUB_OUTPUT"; fi
+      - name: pip cache
+        if: ${{ steps.checklibs.outputs.ENABLED == 'true' }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install deps
+        if: ${{ steps.checklibs.outputs.ENABLED == 'true' }}
+        run: pip install -r requirements.txt
+
